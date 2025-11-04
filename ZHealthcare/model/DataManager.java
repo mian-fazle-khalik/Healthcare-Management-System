@@ -3,17 +3,10 @@ package model;
 import java.io.*;
 import java.util.*;
 
-/**
- * DataManager handles all CSV reading/writing for Patients, Clinicians,
- * Appointments, Prescriptions, Referrals, Facilities, and Staff.
- * 
- * Each load method skips the header row and converts each record
- * into its respective model object using the fromCSVRow() method.
- */
 public class DataManager {
 
     // ===========================================================
-    // BASIC CSV UTILITIES
+    // BASIC CSV UTILS
     // ===========================================================
 
     public static List<String[]> loadCSV(String path) {
@@ -21,7 +14,7 @@ public class DataManager {
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
             String line;
             while ((line = br.readLine()) != null) {
-                // Split on commas (simple version — assume no quoted commas)
+                // Split only on commas not enclosed in quotes (in case of commas in data)
                 data.add(line.split(","));
             }
         } catch (IOException e) {
@@ -58,11 +51,7 @@ public class DataManager {
 
     public static void savePatients(String path, List<Patient> patients) {
         List<String[]> data = new ArrayList<>();
-        data.add(new String[]{
-            "patient_id","first_name","last_name","date_of_birth","nhs_number",
-            "gender","phone_number","email","address","postcode",
-            "emergency_contact_name","emergency_contact_phone","registration_date","gp_surgery_id"
-        });
+        data.add(new String[]{"ID", "Name", "DOB", "Gender", "Contact"});
         for (Patient p : patients) data.add(p.toCSVRow());
         saveCSV(path, data);
     }
@@ -82,36 +71,34 @@ public class DataManager {
 
     public static void saveClinicians(String path, List<Clinician> clinicians) {
         List<String[]> data = new ArrayList<>();
-        data.add(new String[]{
-            "clinician_id","first_name","last_name","title","speciality","gmc_number",
-            "phone_number","email","workplace_id","workplace_type","employment_status","start_date"
-        });
+        data.add(new String[]{"ID", "Name", "Specialty", "Contact", "WorkingHours"});
         for (Clinician c : clinicians) data.add(c.toCSVRow());
         saveCSV(path, data);
     }
+    
+    public static void addClinician(String path, Clinician clinician) {
+        List<Clinician> list = loadClinicians(path);
+        list.add(clinician);
+        saveClinicians(path, list);
+    }
 
-    // ===========================================================
-    // FACILITIES
-    // ===========================================================
-
-    public static List<Facility> loadFacilities(String path) {
-        List<Facility> list = new ArrayList<>();
-        List<String[]> rows = loadCSV(path);
-        for (int i = 1; i < rows.size(); i++) {
-            list.add(Facility.fromCSVRow(rows.get(i)));
+    public static void updateClinician(String path, Clinician updatedClinician) {
+        List<Clinician> list = loadClinicians(path);
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).getClinicianId().equals(updatedClinician.getClinicianId())) {
+                list.set(i, updatedClinician);
+                break;
+            }
         }
-        return list;
+        saveClinicians(path, list);
     }
 
-    public static void saveFacilities(String path, List<Facility> facilities) {
-        List<String[]> data = new ArrayList<>();
-        data.add(new String[]{
-            "facility_id","facility_name","facility_type","address","postcode",
-            "phone_number","email","opening_hours","manager_name","capacity","specialities_offered"
-        });
-        for (Facility f : facilities) data.add(f.toCSVRow());
-        saveCSV(path, data);
+    public static void deleteClinician(String path, String clinicianId) {
+        List<Clinician> list = loadClinicians(path);
+        list.removeIf(c -> c.getClinicianId().equals(clinicianId));
+        saveClinicians(path, list);
     }
+
 
     // ===========================================================
     // APPOINTMENTS
@@ -128,11 +115,7 @@ public class DataManager {
 
     public static void saveAppointments(String path, List<Appointment> appointments) {
         List<String[]> data = new ArrayList<>();
-        data.add(new String[]{
-            "appointment_id","patient_id","clinician_id","facility_id","appointment_date",
-            "appointment_time","duration_minutes","appointment_type","status","reason_for_visit",
-            "notes","created_date","last_modified"
-        });
+        data.add(new String[]{"ID", "PatientID", "ClinicianID", "Date", "Time", "Status"});
         for (Appointment a : appointments) data.add(a.toCSVRow());
         saveCSV(path, data);
     }
@@ -152,11 +135,7 @@ public class DataManager {
 
     public static void savePrescriptions(String path, List<Prescription> prescriptions) {
         List<String[]> data = new ArrayList<>();
-        data.add(new String[]{
-            "prescription_id","patient_id","clinician_id","appointment_id","prescription_date",
-            "medication_name","dosage","frequency","duration_days","quantity",
-            "instructions","pharmacy_name","status","issue_date","collection_date"
-        });
+        data.add(new String[]{"ID", "PatientID", "ClinicianID", "Medications", "Notes", "CreatedAt"});
         for (Prescription p : prescriptions) data.add(p.toCSVRow());
         saveCSV(path, data);
     }
@@ -176,12 +155,7 @@ public class DataManager {
 
     public static void saveReferrals(String path, List<Referral> referrals) {
         List<String[]> data = new ArrayList<>();
-        data.add(new String[]{
-            "referral_id","patient_id","referring_clinician_id","referred_to_clinician_id",
-            "referring_facility_id","referred_to_facility_id","referral_date","urgency_level",
-            "referral_reason","clinical_summary","requested_investigations","status",
-            "appointment_id","notes","created_date","last_updated"
-        });
+        data.add(new String[]{"ID", "PatientID", "ClinicianID", "Reason", "Date"});
         for (Referral r : referrals) data.add(r.toCSVRow());
         saveCSV(path, data);
     }
@@ -201,10 +175,7 @@ public class DataManager {
 
     public static void saveStaff(String path, List<Staff> staffList) {
         List<String[]> data = new ArrayList<>();
-        data.add(new String[]{
-            "staff_id","first_name","last_name","role","department","facility_id",
-            "phone_number","email","employment_status","start_date","line_manager","access_level"
-        });
+        data.add(new String[]{"ID", "Name", "Role", "FacilityID", "Contact"});
         for (Staff s : staffList) data.add(s.toCSVRow());
         saveCSV(path, data);
     }
