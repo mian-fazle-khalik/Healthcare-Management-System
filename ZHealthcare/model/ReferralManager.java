@@ -2,17 +2,16 @@ package model;
 
 public class ReferralManager {
     private static ReferralManager instance;
-    private long counter = System.currentTimeMillis();
+    private int counter = 1;
 
     private ReferralManager() {}
 
-    public static ReferralManager getInstance() {
+    public static synchronized ReferralManager getInstance() {
         if (instance == null) instance = new ReferralManager();
         return instance;
     }
 
-    public synchronized String generateReferralId() {
-        counter++;
-        return "R" + counter;
+    public String generateReferralId() {
+        return "R" + (counter++);
     }
 }

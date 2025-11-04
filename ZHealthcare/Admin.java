@@ -25,29 +25,177 @@ public class Admin extends JFrame {
     private String currentEntity = "patients"; // which CSV is displayed
     private final String viewFolder = "src/view/"; // csv files location
     private List<String[]> currentData = new ArrayList<>();
+    private JButton adminBtn, patientBtn, addBtn, editBtn, delBtn, refreshBtn;
+    private JPanel mainContainer;
+    
+  	
+//	public Admin() {
+//	    setTitle("Healthcare Dashboard - Role Selection");
+//	    setSize(1100, 650);
+//	    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//	    setLocationRelativeTo(null);
+//
+//	    mainContainer = new JPanel(new CardLayout());
+//	    add(mainContainer);
+//
+//	    // Role selection screen
+//	    JPanel rolePanel = new JPanel(new GridBagLayout());
+//	    GridBagConstraints gbc = new GridBagConstraints();
+//	    gbc.insets = new Insets(10, 10, 10, 10);
+//	    gbc.gridx = 0; gbc.gridy = 0;
+//
+//	    JLabel title = new JLabel("Select Role to Continue:");
+//	    title.setFont(new Font("Arial", Font.BOLD, 18));
+//	    rolePanel.add(title, gbc);
+//
+//	    gbc.gridy++;
+//	    adminBtn = new JButton("Admin");
+//	    adminBtn.setPreferredSize(new Dimension(180, 40));
+//	    rolePanel.add(adminBtn, gbc);
+//
+//	    gbc.gridy++;
+//	    patientBtn = new JButton("Patient");
+//	    patientBtn.setPreferredSize(new Dimension(180, 40));
+//	    rolePanel.add(patientBtn, gbc);
+//
+//	    mainContainer.add(rolePanel, "ROLE"); // first screen
+//
+//	    // Build the dashboard but don’t show yet
+//	    JPanel dashboardPanel = buildDashboard();
+//	    mainContainer.add(dashboardPanel, "DASHBOARD");
+//
+//	    // Listeners for switching roles
+//	    adminBtn.addActionListener(e -> switchToAdminView());
+//	    patientBtn.addActionListener(e -> switchToPatientView());
+//	}
+//	
+//	private JPanel buildDashboard() {
+//	    buildNavPanel();
+//	    buildCenterPanel();
+//	    buildRightPanel();
+//
+//	    // Create the split pane for bottom layout
+//	    JSplitPane centerBottom = new JSplitPane(JSplitPane.VERTICAL_SPLIT, centerPanel, rightPanel);
+//	    centerBottom.setDividerLocation(400);
+//
+//	    // Combine navigation + main content
+//	    JSplitPane mainSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, navPanel, centerBottom);
+//	    mainSplit.setDividerLocation(180);
+//
+//	    // Wrap everything in a panel
+//	    JPanel dashPanel = new JPanel(new BorderLayout());
+//	    dashPanel.add(mainSplit, BorderLayout.CENTER);
+//
+//	    return dashPanel;
+//	}
 
+    
     public Admin() {
-        setTitle("Healthcare Admin Dashboard");
+        setTitle("Healthcare Dashboard - Role Selection");
         setSize(1100, 650);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Build UI
-        buildNavPanel();
-        buildCenterPanel();
-        buildRightPanel();
+        // CardLayout container for role selection and dashboard
+        mainContainer = new JPanel(new CardLayout());
+        add(mainContainer);
 
-        JSplitPane centerRight = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, centerPanel, rightPanel);
-        centerRight.setDividerLocation(700);
+        // --- ROLE SELECTION SCREEN ---
+        JPanel rolePanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.gridx = 0; gbc.gridy = 0;
 
-        JSplitPane mainSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, navPanel, centerRight);
+        JLabel title = new JLabel("Select Role to Continue:");
+        title.setFont(new Font("Arial", Font.BOLD, 18));
+        rolePanel.add(title, gbc);
+
+        gbc.gridy++;
+        adminBtn = new JButton("Admin");
+        adminBtn.setPreferredSize(new Dimension(180, 40));
+        rolePanel.add(adminBtn, gbc);
+
+        gbc.gridy++;
+        patientBtn = new JButton("Patient");
+        patientBtn.setPreferredSize(new Dimension(180, 40));
+        rolePanel.add(patientBtn, gbc);
+
+        mainContainer.add(rolePanel, "ROLE"); // first screen
+
+        // --- DASHBOARD PANEL (hidden initially) ---
+        JPanel dashboardPanel = buildDashboard();  // this uses bottom panel for details/actions
+        mainContainer.add(dashboardPanel, "DASHBOARD");
+
+        // --- ACTION LISTENERS ---
+        adminBtn.addActionListener(e -> {
+            switchToAdminView();  // sets button visibility, nav, etc.
+            showCard("DASHBOARD");
+        });
+
+        patientBtn.addActionListener(e -> {
+            switchToPatientView();  // sets button visibility, nav, etc.
+            showCard("DASHBOARD");
+        });
+    }
+
+    // --- Helper to switch cards ---
+    private void showCard(String name) {
+        CardLayout cl = (CardLayout) mainContainer.getLayout();
+        cl.show(mainContainer, name);
+    }
+
+    // --- BUILD DASHBOARD WITH BOTTOM PANEL ---
+    private JPanel buildDashboard() {
+        buildNavPanel();    // left sidebar
+        buildCenterPanel(); // table + toolbar
+        buildRightPanel();  // bottom details/actions panel
+
+        JSplitPane centerBottom = new JSplitPane(JSplitPane.VERTICAL_SPLIT, centerPanel, rightPanel);
+        centerBottom.setDividerLocation(400); // top = table, bottom = details
+
+        JSplitPane mainSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, navPanel, centerBottom);
         mainSplit.setDividerLocation(180);
 
-        add(mainSplit, BorderLayout.CENTER);
-
-        // initial view: patients
-        showEntity("patients");
+        JPanel dashPanel = new JPanel(new BorderLayout());
+        dashPanel.add(mainSplit, BorderLayout.CENTER);
+        return dashPanel;
     }
+
+
+    
+	private void switchToAdminView() {
+	    setTitle("Healthcare Dashboard - Admin View");
+	    CardLayout cl = (CardLayout) mainContainer.getLayout();
+	    cl.show(mainContainer, "DASHBOARD");
+
+	    navPanel.setVisible(true);
+	    addBtn.setVisible(true);
+	    editBtn.setVisible(true);
+	    delBtn.setVisible(true);
+	    refreshBtn.setVisible(true);
+
+	    showEntity("patients");
+	}
+
+
+	private void switchToPatientView() {
+	    setTitle("Healthcare Dashboard - Patient View");
+	    CardLayout cl = (CardLayout) mainContainer.getLayout();
+	    cl.show(mainContainer, "DASHBOARD");
+
+	    navPanel.setVisible(false); // hide left sidebar
+	    addBtn.setVisible(false);
+	    editBtn.setVisible(false);
+	    delBtn.setVisible(false);
+	    refreshBtn.setVisible(true);
+
+	    showEntity("appointments");
+
+	    JOptionPane.showMessageDialog(this,
+	        "Patient view active.\nYou can view, book, modify or cancel appointments.",
+	        "Patient Mode", JOptionPane.INFORMATION_MESSAGE);
+	}
+
 
     private void buildNavPanel() {
         navPanel = new JPanel();
@@ -62,15 +210,30 @@ public class Admin extends JFrame {
         }
     }
 
+ // Utility method to build a panel with record details
+    private JPanel createDetailsPanel(Map<String, String> details) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(0, 1, 0, 5)); // (rows=auto, cols=1, hgap=0, vgap=5)
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        for (Map.Entry<String, String> entry : details.entrySet()) {
+            JLabel label = new JLabel(entry.getKey() + ": " + entry.getValue());
+            panel.add(label);
+        }
+
+        return panel;
+    }
+
+    
     private void buildCenterPanel() {
         centerPanel = new JPanel(new BorderLayout());
 
         // toolbar with Add/Edit/Delete/Refresh
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton addBtn = new JButton("Add");
-        JButton editBtn = new JButton("Edit");
-        JButton delBtn = new JButton("Delete");
-        JButton refreshBtn = new JButton("Refresh");
+        addBtn = new JButton("Add");
+        editBtn = new JButton("Edit");
+        delBtn = new JButton("Delete");
+        refreshBtn = new JButton("Refresh");
 
         addBtn.addActionListener(e -> handleAdd());
         editBtn.addActionListener(e -> handleEdit());
@@ -100,16 +263,47 @@ public class Admin extends JFrame {
         centerPanel.add(tableScroll, BorderLayout.CENTER);
     }
 
-    private JPanel createDetailsPanel(Map<String, String> details) {
-        JPanel panel = new JPanel(new GridLayout(0, 1, 0, 2)); // 2px vertical gap
-        for (Map.Entry<String, String> entry : details.entrySet()) {
-            JLabel label = new JLabel(entry.getKey() + ": " + entry.getValue());
-            label.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0)); // no padding
-            panel.add(label);
-        }
-        return panel;
+    private void showEntity(String entity) {
+        currentEntity = entity;
+        loadCSVToTable(entity + ".csv");
+        updateToolbarButtons();
     }
 
+    // ---------- NEW METHOD: control button states ----------
+    private void updateToolbarButtons() {
+        if (addBtn == null || editBtn == null || delBtn == null) return;
+
+        // Default all disabled first
+        addBtn.setEnabled(false);
+        editBtn.setEnabled(false);
+        delBtn.setEnabled(false);
+
+        switch (currentEntity) {
+            case "patients":
+            case "clinicians":
+            case "appointments":
+            case "staff":
+                addBtn.setEnabled(true);
+                editBtn.setEnabled(true);
+                delBtn.setEnabled(true);
+                break;
+
+            case "facilities":
+            case "prescriptions":
+            case "referrals":
+                addBtn.setEnabled(true);
+                editBtn.setEnabled(true);
+                delBtn.setEnabled(false);
+                break;
+
+            default:
+                // no entity matched
+                break;
+        }
+    }
+    
+    
+    
     private void buildRightPanel() {
         rightPanel = new JPanel();
         rightPanel.setLayout(new BorderLayout());
@@ -121,10 +315,7 @@ public class Admin extends JFrame {
         rightPanel.add(defaultContent, BorderLayout.CENTER);
     }
 
-    private void showEntity(String entity) {
-        currentEntity = entity;
-        loadCSVToTable(entity + ".csv");
-    }
+    
 
     private void loadCSVToTable(String filename) {
         String path = viewFolder + filename;
@@ -185,27 +376,52 @@ public class Admin extends JFrame {
     }
 
     // ---------- Patients dialogs ----------
+ // ---------- Patients dialogs ----------
     private void openAddPatientDialog() {
-        JTextField idF = new JTextField(generateId("P", currentData));
+        String newId = generateSequentialId("P", currentData); // e.g., P12
+        JTextField idF = new JTextField(newId);
         idF.setEditable(false);
-        JTextField nameF = new JTextField();
-        JTextField dobF = new JTextField(); // yyyy-MM-dd
+
+        JTextField firstNameF = new JTextField();
+        JTextField lastNameF = new JTextField();
+        JTextField dobF = new JTextField(LocalDate.now().toString()); // yyyy-MM-dd
+        JTextField nhsF = new JTextField();
         JTextField genderF = new JTextField();
-        JTextField contactF = new JTextField();
+        JTextField phoneF = new JTextField();
+        JTextField emailF = new JTextField();
+        JTextField addressF = new JTextField();
+        JTextField postcodeF = new JTextField();
+        JTextField emergencyNameF = new JTextField();
+        JTextField emergencyPhoneF = new JTextField();
+        JTextField registrationF = new JTextField(LocalDate.now().toString());
+        JTextField gpSurgeryF = new JTextField();
 
         Object[] fields = {
-            "ID:", idF,
-            "Name:", nameF,
-            "DOB (yyyy-mm-dd):", dobF,
+            "Patient ID:", idF,
+            "First Name:", firstNameF,
+            "Last Name:", lastNameF,
+            "Date of Birth (yyyy-mm-dd):", dobF,
+            "NHS Number:", nhsF,
             "Gender:", genderF,
-            "Contact:", contactF
+            "Phone Number:", phoneF,
+            "Email:", emailF,
+            "Address:", addressF,
+            "Postcode:", postcodeF,
+            "Emergency Contact Name:", emergencyNameF,
+            "Emergency Contact Phone:", emergencyPhoneF,
+            "Registration Date:", registrationF,
+            "GP Surgery ID:", gpSurgeryF
         };
 
         int option = JOptionPane.showConfirmDialog(this, fields, "Add New Patient", JOptionPane.OK_CANCEL_OPTION);
         if (option == JOptionPane.OK_OPTION) {
-            String[] row = new String[] { idF.getText(), nameF.getText(), dobF.getText(), genderF.getText(), contactF.getText() };
-            // append to currentData then save
-            currentData.add(row);
+            String[] newRow = new String[] {
+                idF.getText(), firstNameF.getText(), lastNameF.getText(), dobF.getText(), nhsF.getText(),
+                genderF.getText(), phoneF.getText(), emailF.getText(), addressF.getText(), postcodeF.getText(),
+                emergencyNameF.getText(), emergencyPhoneF.getText(), registrationF.getText(), gpSurgeryF.getText()
+            };
+
+            currentData.add(newRow);
             DataManager.saveCSV(viewFolder + "patients.csv", currentData);
             refreshCurrent();
             selectRowById(idF.getText());
@@ -214,103 +430,106 @@ public class Admin extends JFrame {
 
     private void openEditPatientDialog(int selectedRow) {
         int modelRow = mainTable.convertRowIndexToModel(selectedRow);
-        // modelRow corresponds to index in currentData starting at 1
         String[] row = currentData.get(modelRow + 1);
+
         JTextField idF = new JTextField(row[0]); idF.setEditable(false);
-        JTextField nameF = new JTextField(row[1]);
-        JTextField dobF = new JTextField(row.length>2?row[2]:"");
-        JTextField genderF = new JTextField(row.length>3?row[3]:"");
-        JTextField contactF = new JTextField(row.length>4?row[4]:"");
+        JTextField firstNameF = new JTextField(row.length > 1 ? row[1] : "");
+        JTextField lastNameF = new JTextField(row.length > 2 ? row[2] : "");
+        JTextField dobF = new JTextField(row.length > 3 ? row[3] : "");
+        JTextField nhsF = new JTextField(row.length > 4 ? row[4] : "");
+        JTextField genderF = new JTextField(row.length > 5 ? row[5] : "");
+        JTextField phoneF = new JTextField(row.length > 6 ? row[6] : "");
+        JTextField emailF = new JTextField(row.length > 7 ? row[7] : "");
+        JTextField addressF = new JTextField(row.length > 8 ? row[8] : "");
+        JTextField postcodeF = new JTextField(row.length > 9 ? row[9] : "");
+        JTextField emergencyNameF = new JTextField(row.length > 10 ? row[10] : "");
+        JTextField emergencyPhoneF = new JTextField(row.length > 11 ? row[11] : "");
+        JTextField registrationF = new JTextField(row.length > 12 ? row[12] : "");
+        JTextField gpSurgeryF = new JTextField(row.length > 13 ? row[13] : "");
 
         Object[] fields = {
-            "ID:", idF,
-            "Name:", nameF,
-            "DOB (yyyy-mm-dd):", dobF,
+            "Patient ID:", idF,
+            "First Name:", firstNameF,
+            "Last Name:", lastNameF,
+            "Date of Birth (yyyy-mm-dd):", dobF,
+            "NHS Number:", nhsF,
             "Gender:", genderF,
-            "Contact:", contactF
+            "Phone Number:", phoneF,
+            "Email:", emailF,
+            "Address:", addressF,
+            "Postcode:", postcodeF,
+            "Emergency Contact Name:", emergencyNameF,
+            "Emergency Contact Phone:", emergencyPhoneF,
+            "Registration Date:", registrationF,
+            "GP Surgery ID:", gpSurgeryF
         };
 
         int option = JOptionPane.showConfirmDialog(this, fields, "Edit Patient", JOptionPane.OK_CANCEL_OPTION);
         if (option == JOptionPane.OK_OPTION) {
-            String[] newRow = new String[] { idF.getText(), nameF.getText(), dobF.getText(), genderF.getText(), contactF.getText() };
-            currentData.set(modelRow + 1, newRow);
+            String[] updatedRow = new String[] {
+                idF.getText(), firstNameF.getText(), lastNameF.getText(), dobF.getText(), nhsF.getText(),
+                genderF.getText(), phoneF.getText(), emailF.getText(), addressF.getText(), postcodeF.getText(),
+                emergencyNameF.getText(), emergencyPhoneF.getText(), registrationF.getText(), gpSurgeryF.getText()
+            };
+
+            currentData.set(modelRow + 1, updatedRow);
             DataManager.saveCSV(viewFolder + "patients.csv", currentData);
             refreshCurrent();
             selectRowById(idF.getText());
         }
     }
 
+    private String generateSequentialId(String prefix, List<String[]> data) {
+        if (data.size() <= 1) return prefix + "1";
+        String lastId = data.get(data.size() - 1)[0];
+        try {
+            int num = Integer.parseInt(lastId.replace(prefix, ""));
+            return prefix + (num + 1);
+        } catch (Exception e) {
+            return prefix + (data.size());
+        }
+    }
+    
+ // ---------- Helper: select a row in the table by ID ----------
     private void selectRowById(String id) {
-        // find in table and select
-        for (int r=0; r<mainTable.getRowCount(); r++) {
-            if (mainTable.getValueAt(r, 0).toString().equals(id)) {
-                mainTable.getSelectionModel().setSelectionInterval(r, r);
-                mainTable.scrollRectToVisible(mainTable.getCellRect(r, 0, true));
+        if (mainTable == null || tableModel == null) return;
+
+        for (int i = 0; i < mainTable.getRowCount(); i++) {
+            Object value = mainTable.getValueAt(i, 0); // assuming ID is in the first column
+            if (value != null && value.toString().equals(id)) {
+                mainTable.setRowSelectionInterval(i, i);
+                mainTable.scrollRectToVisible(mainTable.getCellRect(i, 0, true));
                 break;
             }
         }
     }
 
-    private String generateId(String prefix, List<String[]> data) {
-        // naive generation: prefix + (timestamp)
-        return prefix + System.currentTimeMillis();
-    }
-
-    // updates right panel when selection changes
-    private void updateRightPanelSelection() {
-        int sel = mainTable.getSelectedRow();
-        rightPanel.removeAll();
-        if (sel < 0) {
-            rightPanel.add(new JLabel("Select a record."), BorderLayout.NORTH);
-            rightPanel.revalidate();
-            rightPanel.repaint();
-            return;
-        }
-        int modelRow = mainTable.convertRowIndexToModel(sel);
-        String[] rowData = currentData.get(modelRow + 1);
-        JPanel info = new JPanel(new GridLayout(0,1));
-        for (int i=0; i<Math.min(rowData.length, tableModel.getColumnCount()); i++) {
-            info.add(new JLabel(tableModel.getColumnName(i) + ": " + rowData[i]));
-        }
-
-        JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        if (currentEntity.equals("patients")) {
-            JButton bookApp = new JButton("Book Appointment");
-            JButton newPres = new JButton("Create Prescription");
-            JButton newRef = new JButton("Create Referral");
-            bookApp.addActionListener(e -> openBookAppointmentDialog(rowData));
-            newPres.addActionListener(e -> openCreatePrescriptionDialog(rowData));
-            newRef.addActionListener(e -> openCreateReferralDialog(rowData));
-            actions.add(bookApp);
-            actions.add(newPres);
-            actions.add(newRef);
-        }
-
-        rightPanel.add(info, BorderLayout.CENTER);
-        rightPanel.add(actions, BorderLayout.SOUTH);
-        rightPanel.revalidate();
-        rightPanel.repaint();
-    }
 
     // ---------- Booking & clinician availability ----------
     private void openBookAppointmentDialog(String[] patientRow) {
         // Load clinicians for choice
         List<String[]> clinicians = DataManager.loadCSV(viewFolder + "clinicians.csv");
-        String[] clinicianNames = clinicians.size() > 1 ? clinicians.get(0) : new String[0]; // headers
-        // build clinician choices as "id - name" from rows
         List<String> clinicianOptions = new ArrayList<>();
-        for (int i=1;i<clinicians.size();i++) {
+
+        // Build clinician choices as "id - name"
+        for (int i = 1; i < clinicians.size(); i++) {
             String[] c = clinicians.get(i);
-            String cid = c.length>0?c[0]:"C?";
-            String cname = c.length>1?c[1]:"Unknown";
+            String cid = c.length > 0 ? c[0] : "C?";
+            String cname = c.length > 1 ? c[1] : "Unknown";
             clinicianOptions.add(cid + " - " + cname);
         }
+
+        if (clinicianOptions.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No clinicians found. Please add clinicians first.");
+            return;
+        }
+
         JComboBox<String> clinicianBox = new JComboBox<>(clinicianOptions.toArray(new String[0]));
-        JTextField dateField = new JTextField(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)); // yyyy-mm-dd
+        JTextField dateField = new JTextField(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)); // yyyy-MM-dd
         JTextField timeField = new JTextField("09:00"); // HH:mm
 
         Object[] fields = {
-            "Patient:", patientRow[1] + " (" + patientRow[0] + ")",
+            "Patient:", patientRow[1] + " (" + patientRow[0] + ")", // name + id
             "Clinician:", clinicianBox,
             "Date (yyyy-mm-dd):", dateField,
             "Time (HH:mm):", timeField
@@ -321,34 +540,72 @@ public class Admin extends JFrame {
 
         String selectedClinText = (String) clinicianBox.getSelectedItem();
         String clinicianId = selectedClinText.split(" - ")[0];
-        String date = dateField.getText();
-        String time = timeField.getText();
+        String clinicianName = selectedClinText.split(" - ")[1];
+        String date = dateField.getText().trim();
+        String time = timeField.getText().trim();
 
-        // check clinician availability by scanning appointments.csv
+        // Validate inputs
+        if (date.isEmpty() || time.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter both date and time.");
+            return;
+        }
+
+        // Check clinician availability in appointments.csv
         List<String[]> appts = DataManager.loadCSV(viewFolder + "appointments.csv");
         boolean conflict = false;
-        for (int i=1;i<appts.size();i++) {
+
+        for (int i = 1; i < appts.size(); i++) {
             String[] a = appts.get(i);
-            // assuming columns: id, patientId, clinicianId, date, time, status
-            if (a.length >= 5 && a[2].equals(clinicianId) && a[3].equals(date) && a[4].equals(time)) {
-                conflict = true; break;
+            // Expected: AppointmentID, PatientID, PatientName, ClinicianID, ClinicianName, Date, Time, Status
+            if (a.length >= 7 && a[3].equals(clinicianId) && a[5].equals(date) && a[6].equals(time)) {
+                conflict = true;
+                break;
             }
         }
+
         if (conflict) {
             JOptionPane.showMessageDialog(this, "Clinician is not available at that slot. Please choose another time or clinician.");
             return;
         }
 
-        // create appointment id and append
+        // Create new appointment row
         String apptId = "A" + System.currentTimeMillis();
-        String[] newAppt = new String[] { apptId, patientRow[0], clinicianId, date, time, "Booked" };
+        String patientId = patientRow[0];
+        String patientName = patientRow[1];
+        String[] newAppt = new String[] {
+            apptId, patientId, patientName, clinicianId, clinicianName, date, time, "Booked"
+        };
+
+        // Ensure header exists
+        if (appts.isEmpty()) {
+            appts.add(new String[] {
+                "AppointmentID", "PatientID", "PatientName",
+                "ClinicianID", "ClinicianName", "Date", "Time", "Status"
+            });
+        } else {
+            // Verify header count (safety check)
+            if (appts.get(0).length < 8) {
+                appts.clear();
+                appts.add(new String[] {
+                    "AppointmentID", "PatientID", "PatientName",
+                    "ClinicianID", "ClinicianName", "Date", "Time", "Status"
+                });
+            }
+        }
+
+        // Add appointment and save
         appts.add(newAppt);
         DataManager.saveCSV(viewFolder + "appointments.csv", appts);
-        JOptionPane.showMessageDialog(this, "Appointment booked: " + apptId);
-        // optionally refresh appointment view
-        if (currentEntity.equals("appointments")) loadCSVToTable("appointments.csv");
+
+        JOptionPane.showMessageDialog(this, "Appointment booked successfully: " + apptId);
+
+        // Refresh if currently viewing appointments
+        if (currentEntity.equals("appointments")) {
+            loadCSVToTable("appointments.csv");
+        }
     }
 
+    
     // ---------- Prescription (simplified) ----------
     private void openCreatePrescriptionDialog(String[] patientRow) {
         // Ask clinician id (or choose)
@@ -421,11 +678,59 @@ public class Admin extends JFrame {
         }
     }
 
+ // ---------- Update Right Panel when a row is selected ----------
+    private void updateRightPanelSelection() {
+        int sel = mainTable.getSelectedRow();
+        if (sel < 0 || currentData.size() <= 1) {
+            rightPanel.removeAll();
+            rightPanel.add(new JLabel("Select a record from the table."), BorderLayout.NORTH);
+            rightPanel.revalidate();
+            rightPanel.repaint();
+            return;
+        }
+
+        int modelRow = mainTable.convertRowIndexToModel(sel);
+        String[] row = currentData.get(modelRow + 1);
+        String[] headers = currentData.get(0);
+
+        // Build details map
+        Map<String, String> details = new LinkedHashMap<>();
+        for (int i = 0; i < headers.length && i < row.length; i++) {
+            details.put(headers[i], row[i]);
+        }
+
+        JPanel detailsPanel = createDetailsPanel(details);
+
+        // Build action buttons (depending on currentEntity)
+        JPanel actionsPanel = new JPanel(new FlowLayout());
+        if (currentEntity.equals("patients")) {
+            JButton bookBtn = new JButton("Book Appointment");
+            JButton prescBtn = new JButton("Create Prescription");
+            JButton refBtn = new JButton("Create Referral");
+
+            bookBtn.addActionListener(e -> openBookAppointmentDialog(row));
+            prescBtn.addActionListener(e -> openCreatePrescriptionDialog(row));
+            refBtn.addActionListener(e -> openCreateReferralDialog(row));
+
+            actionsPanel.add(bookBtn);
+            actionsPanel.add(prescBtn);
+            actionsPanel.add(refBtn);
+        }
+
+        rightPanel.removeAll();
+        rightPanel.add(new JScrollPane(detailsPanel), BorderLayout.CENTER);
+        rightPanel.add(actionsPanel, BorderLayout.SOUTH);
+        rightPanel.revalidate();
+        rightPanel.repaint();
+    }
+
     // main
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             Admin a = new Admin();
             a.setVisible(true);
         });
+        
+        
     }
 }
