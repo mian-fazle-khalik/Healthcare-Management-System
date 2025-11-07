@@ -14,6 +14,7 @@ public class Staff {
     private String lineManager;
     private String accessLevel;
 
+//    Constructor
     public Staff(String staffId, String firstName, String lastName, String role, String department,
                  String facilityId, String phoneNumber, String email, String employmentStatus,
                  String startDate, String lineManager, String accessLevel) {
@@ -31,6 +32,7 @@ public class Staff {
         this.accessLevel = accessLevel;
     }
 
+//    CSV to table list
     public static Staff fromCSVRow(String[] r) {
         return new Staff(
                 safe(r, 0), safe(r, 1), safe(r, 2), safe(r, 3), safe(r, 4),

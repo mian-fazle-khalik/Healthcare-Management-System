@@ -5,10 +5,7 @@ import java.util.*;
 
 public class DataManager {
 
-    // ===========================================================
-    // BASIC CSV UTILS
-    // ===========================================================
-
+//   Loading the csv data
     public static List<String[]> loadCSV(String path) {
         List<String[]> data = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
@@ -23,6 +20,7 @@ public class DataManager {
         return data;
     }
 
+//    Saves the CSV to a text file
     public static void saveCSV(String path, List<String[]> data) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(path))) {
             for (String[] row : data) {
@@ -35,10 +33,7 @@ public class DataManager {
         }
     }
 
-    // ===========================================================
-    // GENERIC TEXT FILE EXPORTER
-    // ===========================================================
-
+//Save the text file
     public static void saveTextFile(String filePath, List<String[]> data) {
         try {
             File file = new File(filePath);
@@ -54,10 +49,7 @@ public class DataManager {
         }
     }
 
-    // ===========================================================
-    // PATIENTS
-    // ===========================================================
-
+//  List of patients
     public static List<Patient> loadPatients(String path) {
         List<Patient> list = new ArrayList<>();
         List<String[]> rows = loadCSV(path);
@@ -67,6 +59,7 @@ public class DataManager {
         return list;
     }
 
+//    Saving the patients with headers
     public static void savePatients(String path, List<Patient> patients) {
         List<String[]> data = new ArrayList<>();
         data.add(new String[]{"ID", "Name", "DOB", "Gender", "Contact"});
@@ -74,10 +67,7 @@ public class DataManager {
         saveCSV(path, data);
     }
 
-    // ===========================================================
-    // CLINICIANS
-    // ===========================================================
-
+//  List of clinician
     public static List<Clinician> loadClinicians(String path) {
         List<Clinician> list = new ArrayList<>();
         List<String[]> rows = loadCSV(path);
@@ -87,6 +77,7 @@ public class DataManager {
         return list;
     }
 
+//  Saving the clinician with headers
     public static void saveClinicians(String path, List<Clinician> clinicians) {
         List<String[]> data = new ArrayList<>();
         data.add(new String[]{"ID", "Name", "Specialty", "Contact", "WorkingHours"});
@@ -94,10 +85,8 @@ public class DataManager {
         saveCSV(path, data);
     }
 
-    // ===========================================================
-    // APPOINTMENTS
-    // ===========================================================
-
+    
+//  List of appointment
     public static List<Appointment> loadAppointments(String path) {
         List<Appointment> list = new ArrayList<>();
         List<String[]> rows = loadCSV(path);
@@ -107,6 +96,7 @@ public class DataManager {
         return list;
     }
 
+//  Saving the appointment with headers
     public static void saveAppointments(String path, List<Appointment> appointments) {
         List<String[]> data = new ArrayList<>();
         data.add(new String[]{"ID", "PatientID", "ClinicianID", "Date", "Time", "Status"});
@@ -114,10 +104,8 @@ public class DataManager {
         saveCSV(path, data);
     }
 
-    // ===========================================================
-    // PRESCRIPTIONS
-    // ===========================================================
 
+//  List of prescription
     public static List<Prescription> loadPrescriptions(String path) {
         List<Prescription> list = new ArrayList<>();
         List<String[]> rows = loadCSV(path);
@@ -127,20 +115,17 @@ public class DataManager {
         return list;
     }
 
+//  Saving the prescription with headers
     public static void savePrescriptions(String path, List<Prescription> prescriptions) {
         List<String[]> data = new ArrayList<>();
         data.add(new String[]{"ID", "PatientID", "ClinicianID", "Medications", "Notes", "CreatedAt"});
         for (Prescription p : prescriptions) data.add(p.toCSVRow());
         saveCSV(path, data);
-
-        // --- Optional text export ---
+//        Output to the text file
         saveTextFile("src/output/prescriptions.txt", data);
     }
 
-    // ===========================================================
-    // REFERRALS (Connected to ReferralManager)
-    // ===========================================================
-
+//  List of referral
     public static List<Referral> loadReferrals(String path) {
         List<Referral> list = new ArrayList<>();
         List<String[]> rows = loadCSV(path);
@@ -150,6 +135,7 @@ public class DataManager {
         return list;
     }
 
+//  saving the referrals
     public static void saveReferrals(String path, List<Referral> referrals) {
         List<String[]> data = new ArrayList<>();
         data.add(new String[]{
@@ -160,15 +146,11 @@ public class DataManager {
 
         for (Referral r : referrals) data.add(r.toCSVRow());
         saveCSV(path, data);
-
-        // Export readable text
+//      Output to the text file
         saveTextFile("src/output/referrals.txt", data);
     }
 
-    // ===========================================================
-    // STAFF
-    // ===========================================================
-
+// List of Staff
     public static List<Staff> loadStaff(String path) {
         List<Staff> list = new ArrayList<>();
         List<String[]> rows = loadCSV(path);
@@ -178,6 +160,7 @@ public class DataManager {
         return list;
     }
 
+// Save the staff details with headers
     public static void saveStaff(String path, List<Staff> staffList) {
         List<String[]> data = new ArrayList<>();
         data.add(new String[]{"ID", "Name", "Role", "FacilityID", "Contact"});

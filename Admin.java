@@ -20,84 +20,91 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public class Admin extends JFrame {
+	
+//	Panel creation
 	private JPanel navPanel, rightPanel, centerPanel;
 	private JTable mainTable;
 	private DefaultTableModel tableModel;
-	private JScrollPane tableScroll;
+	
+//	The patients table is shown first
 	private String currentEntity = "patients";
+	
+//	View package location
 	private final String viewFolder = "src/view/";
 	private List<String[]> currentData = new ArrayList<>();
-	private JButton adminBtn, patientBtn, addBtn, editBtn, delBtn, refreshBtn;
+	
+//	Buttons to manipulate data
 	private JPanel mainContainer;
-	private JButton selectedButton = null;
+	private JButton adminBtn, patientBtn, addBtn, editBtn, delBtn, refreshBtn;
+	private JButton processRescheduleBtn;
 
-	// These are used by some methods (kept for compatibility with AdminUI-style
-	// code)
+//	No selected button
+	private JButton selectedButton = null;
 	private JTable table;
 	private DefaultTableModel model;
 	private JPanel detailsPanel;
-
+	
+//	Listeners to contribute to the singleton pattern
 	private Consumer<String> entitySelectionListener;
 	private Runnable addListener;
 	private Consumer<Integer> editListener;
 	private Consumer<Integer> deleteListener;
 	private Consumer<Integer> rowSelectionListener;
 
-	// Single DialogController instance
+//	DialogController Instance
 	private DialogController dialogController;
 
-	private JButton processRescheduleBtn; // class-level variable
 
 	public Admin() {
 		setTitle("Healthcare Dashboard - Role Selection");
-		setSize(1100, 650);
+		setSize(1100, 650); //Size of the viewport
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
 
 		mainContainer = new JPanel(new CardLayout());
 		add(mainContainer);
 
-		// --- ROLE SELECTION SCREEN ---
+		// Role Selection Screen
 		JPanel rolePanel = new JPanel(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.insets = new Insets(10, 10, 10, 10);
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 
+//		Screen to choose the role
 		JLabel title = new JLabel("Select Role to Continue:");
 		title.setFont(new Font("Arial", Font.BOLD, 18));
 		rolePanel.add(title, gbc);
 
+//		Admin View
 		gbc.gridy++;
 		adminBtn = new JButton("Admin");
 		adminBtn.setPreferredSize(new Dimension(180, 40));
 		rolePanel.add(adminBtn, gbc);
 
+//		Patient View
 		gbc.gridy++;
 		patientBtn = new JButton("Patient");
 		patientBtn.setPreferredSize(new Dimension(180, 40));
 		rolePanel.add(patientBtn, gbc);
 
-		mainContainer.add(rolePanel, "ROLE"); // first screen
+		
+		mainContainer.add(rolePanel, "ROLE"); // first screen to show the role
 
 		// Build dashboard and add as card
 		JPanel dashboardPanel = buildDashboard();
 		mainContainer.add(dashboardPanel, "DASHBOARD");
 
-		// DialogController will be initialized in buildCenterPanel (after mainTable
-		// exists)
-		// But keep a safe init here - buildCenterPanel creates it already.
-
-		// --- ACTION LISTENERS ---
+//		Action Listeners for admin and patients button
 		adminBtn.addActionListener(e -> switchToAdminView());
 		patientBtn.addActionListener(e -> switchToPatientView());
 	}
 
 	// Build dashboard by composing nav, center, right
 	private JPanel buildDashboard() {
-		buildNavPanel();
-		buildCenterPanel();
-		buildRightPanel();
+		buildNavPanel(); //Stores the buttons for data manipulation
+		buildCenterPanel(); //Stores the actual representation of data
+		buildBottomPanel(); //When clicking on a row, the bottom nav shows the full details of the row
 
 		JSplitPane centerBottom = new JSplitPane(JSplitPane.VERTICAL_SPLIT, centerPanel, rightPanel);
 		centerBottom.setDividerLocation(400);
@@ -110,9 +117,11 @@ public class Admin extends JFrame {
 		return dashPanel;
 	}
 
+//	====== ADMIN VIEW ======
 	private void switchToAdminView() {
 		setTitle("Healthcare Dashboard - Admin View");
-		// Ensure toolbar buttons visible
+//		Ensuring that the toolbar buttons are all visible
+//		Add, Edit, Delete & Refresh
 		if (navPanel != null)
 			navPanel.setVisible(true);
 		if (addBtn != null)
@@ -127,7 +136,7 @@ public class Admin extends JFrame {
 		// Add processRescheduleBtn to toolbar if present and not already added
 		try {
 			if (centerPanel != null && processRescheduleBtn != null) {
-				Component comp = centerPanel.getComponent(0); // toolbar assumed at index 0
+				Component comp = centerPanel.getComponent(0);
 				if (comp instanceof JPanel) {
 					JPanel toolbar = (JPanel) comp;
 					if (processRescheduleBtn.getParent() != toolbar) {
@@ -139,7 +148,7 @@ public class Admin extends JFrame {
 		} catch (Exception ignored) {
 		}
 
-		// show patients by default
+		// show patients list by default and clicked the button
 		showEntity("patients");
 		showCard("DASHBOARD");
 
@@ -147,10 +156,11 @@ public class Admin extends JFrame {
 		System.out.println("[UI] Switched to Admin view");
 	}
 
+//	Patient view to show the list of patients and can search for the appointments
 	private void switchToPatientView() {
 		setTitle("Healthcare Dashboard - Patient View");
 
-		// Hide admin buttons
+		// Hide admin buttons since only 'Search for appointments' is needed
 		if (navPanel != null)
 			navPanel.setVisible(false);
 		if (addBtn != null)
@@ -166,18 +176,21 @@ public class Admin extends JFrame {
 		showEntity("patients");
 		showCard("DASHBOARD");
 
-		// Add "Search for Appointments" button below table (temporary)
+		// Add "Search for Appointments" button to search for the appointments of a patient
 		JButton searchAppointmentsBtn = new JButton("Search for Appointments");
 		searchAppointmentsBtn.addActionListener(e -> openSearchAppointmentsDialog());
 
+//		Bottom panel to see the full details
 		JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		bottomPanel.add(searchAppointmentsBtn);
 
+//		Handlind exception
 		try {
 			centerPanel.add(bottomPanel, BorderLayout.SOUTH);
 		} catch (Exception ignored) {
 		}
 
+//		Dialog in the patient view
 		JOptionPane.showMessageDialog(this, "Patient view active.\nYou can view, book, modify or cancel appointments.",
 				"Patient Mode", JOptionPane.INFORMATION_MESSAGE);
 
@@ -185,6 +198,7 @@ public class Admin extends JFrame {
 		System.out.println("[UI] Switched to Patient view");
 	}
 
+//	Adding the left nav panel for all the categories of data
 	private void buildNavPanel() {
 		navPanel = new JPanel();
 		navPanel.setLayout(new GridLayout(0, 1, 5, 5));
@@ -192,27 +206,25 @@ public class Admin extends JFrame {
 
 		String[] entities = { "patients", "clinicians", "appointments", "prescriptions", "referrals" };
 		for (String ent : entities) {
-			JButton b = new JButton(ent.substring(0, 1).toUpperCase() + ent.substring(1));
+			JButton b = new JButton(ent.substring(0, 1).toUpperCase() + ent.substring(1)); // Capitalize the words
 
-			// Highlight the button when clicked and show the entity
+			// When a button is clicked it is turned black with white text
 			b.addActionListener(e -> {
-				// Logging
 				ReferralManager.getInstance().logAction("Button clicked: " + ent);
 				System.out.println("[UI] " + ent + " button clicked");
-
 				showEntity(ent); // switch table to this entity
 				selectSidebarButton(b); // highlight the selected button
 			});
-
 			navPanel.add(b);
 
-			// Optionally, select the first button by default
+			// Select patients as default
 			if (selectedButton == null && ent.equals("patients")) {
 				selectSidebarButton(b);
 			}
 		}
 	}
 
+//	Building the central panel
 	private void buildCenterPanel() {
 		centerPanel = new JPanel(new BorderLayout());
 
@@ -222,14 +234,13 @@ public class Admin extends JFrame {
 		delBtn = new JButton("Delete");
 		refreshBtn = new JButton("Refresh");
 
-		// --- ADD button ---
+		// Add button listeners and the logging for singleton
 		addBtn.addActionListener(e -> {
 			ReferralManager.getInstance().logAction("[UI] Add button clicked for entity: " + currentEntity);
 			if (addListener != null)
 				addListener.run();
 		});
 
-//         --- EDIT button ---
 		editBtn.addActionListener(e -> {
 			int selectedRow = table.getSelectedRow();
 			ReferralManager.getInstance().logAction("[UI] Edit button clicked. Selected row: " + selectedRow);
@@ -237,7 +248,6 @@ public class Admin extends JFrame {
 				editListener.accept(selectedRow);
 		});
 
-		// --- DELETE button ---
 		delBtn.addActionListener(e -> {
 			int selectedRow = table.getSelectedRow();
 			ReferralManager.getInstance().logAction("[UI] Delete button clicked. Selected row: " + selectedRow);
@@ -245,12 +255,11 @@ public class Admin extends JFrame {
 				deleteListener.accept(selectedRow);
 		});
 
-		// --- REFRESH button ---
 		refreshBtn.addActionListener(e -> {
 			ReferralManager.getInstance().logAction("[UI] Refresh button clicked for entity: " + currentEntity);
-//            loadEntityData(currentEntity); // if you already have this function
 		});
 
+//		Buttons 
 		addBtn.addActionListener(e -> handleAdd());
 		editBtn.addActionListener(e -> handleEdit());
 		delBtn.addActionListener(e -> handleDelete());
@@ -261,12 +270,9 @@ public class Admin extends JFrame {
 		toolbar.add(delBtn);
 		toolbar.add(refreshBtn);
 
-		// Process Reschedule button (added dynamically in admin view)
 		processRescheduleBtn = new JButton("Process Reschedules");
 		processRescheduleBtn.addActionListener(e -> autoRescheduleAppointments());
-
 		centerPanel.add(toolbar, BorderLayout.NORTH);
-
 		tableModel = new DefaultTableModel();
 		mainTable = new JTable(tableModel);
 		mainTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -275,28 +281,29 @@ public class Admin extends JFrame {
 				updateRightPanelSelection();
 		});
 
-		tableScroll = new JScrollPane(mainTable);
+		JScrollPane tableScroll = new JScrollPane(mainTable);
 		centerPanel.add(tableScroll, BorderLayout.CENTER);
-
-		// Initialize DialogController with correct references
 		dialogController = new DialogController(viewFolder, mainTable, currentData);
 	}
 
-	private void buildRightPanel() {
+//	Bottom panel to show the details of the rows
+	private void buildBottomPanel() {
 		rightPanel = new JPanel();
 		rightPanel.setLayout(new BorderLayout());
-		rightPanel.setBorder(BorderFactory.createTitledBorder("Details / Actions"));
+		rightPanel.setBorder(BorderFactory.createTitledBorder("Details / Actions")); //Title on the panel
 		JPanel defaultContent = new JPanel(new BorderLayout());
-		defaultContent.add(new JLabel("Select a record from the table."), BorderLayout.NORTH);
+		defaultContent.add(new JLabel("Select a record from the table."), BorderLayout.NORTH); //Helper text
 		rightPanel.add(defaultContent, BorderLayout.CENTER);
 	}
 
+//	The csv file is read and the entity shown
 	private void showEntity(String entity) {
 		currentEntity = entity;
 		loadCSVToTable(entity + ".csv");
 		updateToolbarButtons();
 	}
 
+//	Different buttons for different categories of the healthcare
 	private void updateToolbarButtons() {
 		if (addBtn == null || editBtn == null || delBtn == null)
 			return;
@@ -322,6 +329,7 @@ public class Admin extends JFrame {
 		}
 	}
 
+//	Loading the details of the csv into the table
 	private void loadCSVToTable(String filename) {
 		currentData = DataManager.loadCSV(viewFolder + filename);
 		SwingUtilities.invokeLater(() -> {
@@ -337,74 +345,75 @@ public class Admin extends JFrame {
 			for (int i = 1; i < currentData.size(); i++)
 				tableModel.addRow(currentData.get(i));
 		});
-
-		// Update DialogController reference so dialogs have fresh data and table
-		// reference
 		dialogController = new DialogController(viewFolder, mainTable, currentData);
 	}
 
+//	Refresh button incase it is needed
 	private void refreshCurrent() {
 		showEntity(currentEntity);
 	}
 
+//	HAndle the add button logic
 	private void handleAdd() {
 		ReferralManager.getInstance().logAction("[UI] Add button clicked for entity: " + currentEntity);
 		switch (currentEntity) {
 		case "patients":
-			dialogController.openAddPatientDialog();
+			dialogController.openAddPatientDialog(); //opens the dialog to add a patient
 			break;
 		case "clinicians":
-			dialogController.openAddClinicianDialog();
+			dialogController.openAddClinicianDialog(); //opens the dialog to add a clinicians
 			break;
 		case "appointments":
-			dialogController.openAddAppointmentDialog();
+			dialogController.openAddAppointmentDialog(); //opens the dialog to add a appointment
 			break;
 		case "prescriptions":
-			dialogController.openAddPrescriptionDialog();
+			dialogController.openAddPrescriptionDialog(); //opens the dialog to add a prescriptions
 			break;
 		case "referrals":
-			dialogController.openAddReferralDialog();
+			dialogController.openAddReferralDialog(); //opens the dialog to add a referrals
 			break;
 		default:
-			JOptionPane.showMessageDialog(this, "Add not implemented for " + currentEntity);
+			JOptionPane.showMessageDialog(this, "Add not implemented for " + currentEntity); //incase a category does not allow the addition
 		}
 		ReferralManager.getInstance().logAction("[DATA] Record added successfully in " + currentEntity);
-		refreshCurrent();
+		refreshCurrent(); //Refreshes the list
 	}
 
+//	Handle the edit button logic
 	private void handleEdit() {
 		int sel = mainTable.getSelectedRow();
 		if (sel < 0) {
 			ReferralManager.getInstance().logAction("[WARN] Edit button clicked but no row selected");
-			JOptionPane.showMessageDialog(this, "Select a row first.");
+			JOptionPane.showMessageDialog(this, "Select a row first."); //a row needs to be selected to be able to edit
 			return;
 		}
-
 		ReferralManager.getInstance().logAction("[UI] Edit button clicked for " + currentEntity + " - Row: " + sel);
+
 
 		switch (currentEntity) {
 		case "patients":
-			dialogController.openEditPatientDialog(sel);
+			dialogController.openEditPatientDialog(sel); //add edit dialog for patients
 			break;
 		case "clinicians":
-			dialogController.openEditClinicianDialog(sel);
+			dialogController.openEditClinicianDialog(sel); //add edit dialog for clinicians
 			break;
 		case "appointments":
-			dialogController.openEditAppointmentDialog(sel);
+			dialogController.openEditAppointmentDialog(sel); //add edit dialog for appointments
 			break;
 		case "prescriptions":
-			dialogController.openEditPrescriptionDialog(sel);
+			dialogController.openEditPrescriptionDialog(sel); //add edit dialog for prescriptions
 			break;
 		case "referrals":
-			dialogController.openEditReferralDialog(sel);
+			dialogController.openEditReferralDialog(sel); //add edit dialog for referrals
 			break;
 		default:
 			JOptionPane.showMessageDialog(this, "Edit not implemented for " + currentEntity);
 		}
 		ReferralManager.getInstance().logAction("[DATA] Row " + sel + " edited successfully in " + currentEntity);
-		refreshCurrent();
+		refreshCurrent(); //refresh the list
 	}
 
+//	Handle the delete function
 	private void handleDelete() {
 		int sel = mainTable.getSelectedRow();
 		if (sel < 0) {
@@ -412,23 +421,23 @@ public class Admin extends JFrame {
 			JOptionPane.showMessageDialog(this, "Select a row first.");
 			return;
 		}
-
 		ReferralManager.getInstance().logAction("[UI] Delete button clicked for " + currentEntity + " - Row: " + sel);
-
 		int modelRow = mainTable.convertRowIndexToModel(sel);
-		int confirm = JOptionPane.showConfirmDialog(this, "Delete selected record?", "Confirm",
+		int confirm = JOptionPane.showConfirmDialog(this, "Delete selected record?", "Confirm", //confirm the deletion of a row
 				JOptionPane.YES_NO_OPTION);
 		if (confirm == JOptionPane.YES_OPTION) {
 			currentData.remove(modelRow + 1);
-			DataManager.saveCSV(viewFolder + currentEntity + ".csv", currentData);
+			DataManager.saveCSV(viewFolder + currentEntity + ".csv", currentData); //removes it from the csv
 			ReferralManager.getInstance()
-					.logAction("[DATA] Row " + sel + " deleted successfully from " + currentEntity);
+					.logAction("[DATA] Row " + sel + " deleted successfully from " + currentEntity); //successfully deleted dialog
 			refreshCurrent();
 		} else {
 			ReferralManager.getInstance().logAction("[CANCEL] Delete operation canceled for row " + sel);
 		}
 	}
 
+//	Logic for the 'Reschedule appointment' button
+//	It finds the next best time to schedule the appointment for the patient that chose to reschedule the appointment
 	private String[] findNextAvailableSlot(String clinicianId, String facilityId, int duration,
 			List<String[]> appointmentsData) {
 		LocalDate date = LocalDate.now();
@@ -446,12 +455,10 @@ public class Admin extends JFrame {
 						continue; // different clinician
 					if (!appt[3].equals(facilityId))
 						continue; // different facility
-
 					LocalDate apptDate = LocalDate.parse(appt[4]);
 					LocalTime apptStart = LocalTime.parse(appt[5]);
 					int apptDuration = Integer.parseInt(appt[6]);
 					LocalTime apptEnd = apptStart.plusMinutes(apptDuration);
-
 					if (apptDate.equals(date)
 							&& !(time.plusMinutes(duration).isBefore(apptStart) || time.isAfter(apptEnd))) {
 						conflict = true;
@@ -466,6 +473,7 @@ public class Admin extends JFrame {
 		}
 	}
 
+//	Auto reschedule appointment
 	private void autoRescheduleAppointments() {
 		List<String[]> appointmentsData = DataManager.loadCSV(viewFolder + "appointments.csv");
 		boolean updated = false;
@@ -483,7 +491,7 @@ public class Admin extends JFrame {
 					LocalDate newDate = LocalDate.parse(date).plusDays(offset);
 					if (isDateAvailable(clinicianId, facilityId, newDate, appointmentsData)) {
 						appt[4] = newDate.toString();
-						appt[8] = "Scheduled"; // ✅ Update status to scheduled
+						appt[8] = "Scheduled"; // Change the status to scheduled
 						updated = true;
 						break;
 					}
@@ -493,13 +501,14 @@ public class Admin extends JFrame {
 
 		if (updated) {
 			DataManager.saveCSV(viewFolder + "appointments.csv", appointmentsData);
-			JOptionPane.showMessageDialog(this, "Reschedule appointments have been scheduled.");
+			JOptionPane.showMessageDialog(this, "Reschedule appointments have been scheduled."); // dialog
 			refreshCurrent(); // reload table
 		} else {
 			JOptionPane.showMessageDialog(this, "No available slots found for reschedules.");
 		}
 	}
 
+//	Checks to see if the date is available
 	private boolean isDateAvailable(String clinicianId, String facilityId, LocalDate date,
 			List<String[]> appointmentsData) {
 		for (int i = 1; i < appointmentsData.size(); i++) {
@@ -512,13 +521,15 @@ public class Admin extends JFrame {
 		return true;
 	}
 
+//	Openeing the search appointment dialog for the patients view
 	private void openSearchAppointmentsDialog() {
 		// Load patients
 		List<String[]> patientsData = DataManager.loadCSV(viewFolder + "patients.csv");
 		if (patientsData == null || patientsData.size() <= 1) {
-			JOptionPane.showMessageDialog(this, "No patients available.");
+			JOptionPane.showMessageDialog(this, "No patients available."); 
 			return;
 		}
+//		gives options for the patients to choose from
 		String[] patientOptions = patientsData.stream().skip(1).map(p -> p[0] + " - " + p[1] + " " + p[2])
 				.toArray(String[]::new);
 
@@ -532,11 +543,11 @@ public class Admin extends JFrame {
 			return;
 		String patientId = selected.split(" - ")[0];
 
-		// Load appointments
+		// Load appointments on the screen in a list
 		List<String[]> appointmentsData = DataManager.loadCSV(viewFolder + "appointments.csv");
 		String[] header = appointmentsData.get(0);
 
-		// Filter appointments for patient
+		// Filter appointments for patient selected
 		List<String[]> patientAppointments = new ArrayList<>();
 		patientAppointments.add(header);
 		for (int i = 1; i < appointmentsData.size(); i++) {
@@ -565,7 +576,7 @@ public class Admin extends JFrame {
 			}
 		};
 
-		// Populate table
+		// Populate table for the appointment details
 		for (String col : patientAppointments.get(0))
 			apptModel.addColumn(col);
 		for (int i = 1; i < patientAppointments.size(); i++)
@@ -574,7 +585,7 @@ public class Admin extends JFrame {
 		JScrollPane scroll = new JScrollPane(apptTable);
 		scroll.setPreferredSize(new Dimension(900, 300));
 
-		// Buttons
+		// Buttons for cancel and reschedule that the patient can choose from
 		JButton cancelBtn = new JButton("Cancel");
 		JButton rescheduleBtn = new JButton("Reschedule");
 
@@ -590,13 +601,13 @@ public class Admin extends JFrame {
 			appointmentsData.removeIf(appt -> appt[0].equals(appointmentId));
 			DataManager.saveCSV(viewFolder + "appointments.csv", appointmentsData);
 
-			JOptionPane.showMessageDialog(this, "Appointment cancelled successfully.");
+			JOptionPane.showMessageDialog(this, "Appointment cancelled successfully."); //cancellation text 
 		});
 
 		rescheduleBtn.addActionListener(e -> {
 			int sel = apptTable.getSelectedRow();
 			if (sel < 0) {
-				JOptionPane.showMessageDialog(this, "Select an appointment to reschedule.");
+				JOptionPane.showMessageDialog(this, "Select an appointment to reschedule."); //reschedule text
 				return;
 			}
 
@@ -609,8 +620,7 @@ public class Admin extends JFrame {
 					break;
 				}
 			}
-			DataManager.saveCSV(viewFolder + "appointments.csv", appointmentsData);
-
+			DataManager.saveCSV(viewFolder + "appointments.csv", appointmentsData); //adds it to the csv 
 			JOptionPane.showMessageDialog(this, "Appointment marked for reschedule.");
 		});
 
@@ -626,85 +636,7 @@ public class Admin extends JFrame {
 				JOptionPane.INFORMATION_MESSAGE);
 	}
 
-	// Admin approves or denies reschedules
-	private void openApproveRescheduleDialog() {
-		List<String[]> appointmentsData = DataManager.loadCSV(viewFolder + "appointments.csv");
-		List<String[]> requested = new ArrayList<>();
-		requested.add(appointmentsData.get(0)); // header
-
-		for (int i = 1; i < appointmentsData.size(); i++) {
-			if ("Reschedule".equalsIgnoreCase(appointmentsData.get(i)[8]))
-				requested.add(appointmentsData.get(i));
-		}
-
-		if (requested.size() <= 1) {
-			JOptionPane.showMessageDialog(this, "No reschedule requests pending.");
-			return;
-		}
-
-		DefaultTableModel reqModel = new DefaultTableModel();
-		JTable reqTable = new JTable(reqModel);
-		for (String col : requested.get(0))
-			reqModel.addColumn(col);
-		for (int i = 1; i < requested.size(); i++)
-			reqModel.addRow(requested.get(i));
-
-		JScrollPane scroll = new JScrollPane(reqTable);
-		scroll.setPreferredSize(new Dimension(900, 300));
-
-		JButton approveBtn = new JButton("Approve");
-		JButton denyBtn = new JButton("Deny");
-
-		approveBtn.addActionListener(e -> {
-			int sel = reqTable.getSelectedRow();
-			if (sel < 0) {
-				JOptionPane.showMessageDialog(this, "Select a request.");
-				return;
-			}
-
-			String appointmentId = (String) reqModel.getValueAt(sel, 0);
-			reqModel.setValueAt("Rescheduled", sel, 8);
-
-			for (int i = 1; i < appointmentsData.size(); i++) {
-				if (appointmentsData.get(i)[0].equals(appointmentId)) {
-					appointmentsData.get(i)[8] = "Rescheduled";
-					break;
-				}
-			}
-			DataManager.saveCSV(viewFolder + "appointments.csv", appointmentsData);
-			JOptionPane.showMessageDialog(this, "Reschedule approved.");
-		});
-
-		denyBtn.addActionListener(e -> {
-			int sel = reqTable.getSelectedRow();
-			if (sel < 0)
-				return;
-
-			String appointmentId = (String) reqModel.getValueAt(sel, 0);
-			reqModel.setValueAt("Denied", sel, 8);
-
-			for (int i = 1; i < appointmentsData.size(); i++) {
-				if (appointmentsData.get(i)[0].equals(appointmentId)) {
-					appointmentsData.get(i)[8] = "Denied";
-					break;
-				}
-			}
-			DataManager.saveCSV(viewFolder + "appointments.csv", appointmentsData);
-			JOptionPane.showMessageDialog(this, "Reschedule request denied.");
-		});
-
-		JPanel actionPanel = new JPanel();
-		actionPanel.add(approveBtn);
-		actionPanel.add(denyBtn);
-
-		JPanel dialogPanel = new JPanel(new BorderLayout());
-		dialogPanel.add(scroll, BorderLayout.CENTER);
-		dialogPanel.add(actionPanel, BorderLayout.SOUTH);
-
-		JOptionPane.showMessageDialog(this, dialogPanel, "Pending Reschedule Requests",
-				JOptionPane.INFORMATION_MESSAGE);
-	}
-
+//	
 	private void updateRightPanelSelection() {
 		if (mainTable.getSelectedRow() < 0)
 			return;
@@ -721,14 +653,12 @@ public class Admin extends JFrame {
 	}
 
 	private void selectSidebarButton(JButton btn) {
-		// Reset previous button
 		if (selectedButton != null) {
 			selectedButton.setBackground(UIManager.getColor("Button.background"));
-			selectedButton.setForeground(Color.BLACK); // optional
+			selectedButton.setForeground(Color.BLACK);
 		}
-
-		// Set new button as selected
-		btn.setBackground(Color.BLACK); // or any highlight color
+// selected button view
+		btn.setBackground(Color.BLACK); 
 		btn.setForeground(Color.WHITE);
 		selectedButton = btn;
 	}
@@ -743,13 +673,13 @@ public class Admin extends JFrame {
 	}
 	
 
+//	Lines of the prescription and referral to be added to the text file
 	public static boolean copyFileContents(String srcPath, String destPath) {
 	    File src = new File(srcPath);
 	    if (!src.exists()) {
 	        System.err.println("[copyFileContents] Source file does not exist: " + srcPath);
 	        return false;
 	    }
-	    // Ensure destination directory exists
 	    File dest = new File(destPath);
 	    File parent = dest.getParentFile();
 	    if (parent != null && !parent.exists()) {
@@ -758,7 +688,7 @@ public class Admin extends JFrame {
 	    }
 
 	    try (BufferedReader br = new BufferedReader(new FileReader(src));
-	         BufferedWriter bw = new BufferedWriter(new FileWriter(dest, false))) { // false => overwrite
+	         BufferedWriter bw = new BufferedWriter(new FileWriter(dest, false))) {
 	        String line;
 	        int count = 0;
 	        while ((line = br.readLine()) != null) {
@@ -777,23 +707,14 @@ public class Admin extends JFrame {
 	}
 
 
-	// === MAIN ===
-//	public static void main(String[] args) {
-//
-//		SwingUtilities.invokeLater(() -> {
-//			Admin adminApp = new Admin(); 
-//			adminApp.setVisible(true);
-//		});
-//	}
-	
 	public static void main(String[] args) {
 	    System.out.println("=== Starting Healthcare Dashboard Application ===");
 
-	    String viewFolder = "src/view/"; // adjust if your CSVs are elsewhere
+	    String viewFolder = "src/view/"; //csv file locations
 	    String prescriptionsCSV = viewFolder + "prescriptions.csv";
 	    String referralsCSV = viewFolder + "referrals.csv";
 
-	    // choose the exact outputs you want
+	    // output text files
 	    String prescriptionsTxt = viewFolder + "prescriptions_output.txt";
 	    String referralsTxt = viewFolder + "referrals_output.txt";
 
@@ -810,8 +731,4 @@ public class Admin extends JFrame {
 	        adminApp.setVisible(true);
 	    });
 	}
-
-
-
-	
 }
