@@ -1,5 +1,0 @@
-Prescription ID: PR1762180666023
-Patient: Robert (P003)
-Clinician: C001
-Medications: 11
-Notes: 11

@@ -1,5 +1,0 @@
-Prescription ID: PR1762252042676
-Patient: Linda (P006)
-Clinician: C001
-Medications: ihihih
-Notes: hihihhihihi
