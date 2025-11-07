@@ -1,18 +1,19 @@
 package model;
 
 public class Facility {
-    private String facilityId;
-    private String facilityName;
-    private String facilityType;
-    private String address;
-    private String postcode;
-    private String phoneNumber;
-    private String email;
-    private String openingHours;
-    private String managerName;
-    private String capacity;
-    private String specialitiesOffered;
+    private String facilityId; //facility id
+    private String facilityName; //facility name
+    private String facilityType; //facility type
+    private String address; //facility address
+    private String postcode; //facility postcode
+    private String phoneNumber; //facility number
+    private String email; //facility email
+    private String openingHours; //facility hours
+    private String managerName; //manager name
+    private String capacity; //capacity 
+    private String specialitiesOffered; //specialtied offered
 
+//    Contrructor
     public Facility(String facilityId, String facilityName, String facilityType, String address, String postcode,
                     String phoneNumber, String email, String openingHours, String managerName, String capacity,
                     String specialitiesOffered) {
@@ -29,6 +30,7 @@ public class Facility {
         this.specialitiesOffered = specialitiesOffered;
     }
 
+//    Enters the CSV to a list
     public static Facility fromCSVRow(String[] r) {
         return new Facility(
                 safe(r, 0), safe(r, 1), safe(r, 2), safe(r, 3), safe(r, 4),

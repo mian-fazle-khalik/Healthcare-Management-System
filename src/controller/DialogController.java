@@ -27,7 +27,7 @@ public class DialogController {
         this.currentData = currentData;
     }
 
-    // ---------- Helper ----------
+    // Getting the ID right for each category
     private String generateSequentialId(String prefix, List<String[]> data) {
         if (data.size() <= 1) return prefix + "1";
         String lastId = data.get(data.size() - 1)[0];
@@ -39,6 +39,7 @@ public class DialogController {
         }
     }
 
+//    Select row and uniquely identify it by the ID
     private void selectRowById(String id) {
         if (mainTable == null || mainTable.getModel() == null) return;
         for (int i = 0; i < mainTable.getRowCount(); i++) {
@@ -51,6 +52,7 @@ public class DialogController {
         }
     }
 
+//    Getting the name by the ID
     private String getNameById(List<String[]> list, String id) {
         for (int i = 1; i < list.size(); i++) {
             if (list.get(i)[0].equals(id)) {
@@ -60,6 +62,7 @@ public class DialogController {
         return "";
     }
 
+//    Writes the csv into the text file
     private void writeTextOutput(String filepath, String content) {
         try {
             File f = new File(filepath);
@@ -72,7 +75,7 @@ public class DialogController {
         }
     }
 
-    // ---------- Patient dialogs ----------
+    // PAtient dialog field names
     public void openAddPatientDialog() {
         String newId = generateSequentialId("P", currentData);
         JTextField idF = new JTextField(newId); idF.setEditable(false);
@@ -120,6 +123,7 @@ public class DialogController {
         }
     }
 
+//    Edit patient dialog field names
     public void openEditPatientDialog(int selectedRow) {
         int modelRow = mainTable.convertRowIndexToModel(selectedRow);
         String[] row = currentData.get(modelRow + 1);
@@ -169,7 +173,7 @@ public class DialogController {
         }
     }
     
- // ---------- Clinician dialogs ----------
+ // Add clinician dialog field names
     public void openAddClinicianDialog() {
         String newId = generateSequentialId("C", currentData);
         JTextField idF = new JTextField(newId); idF.setEditable(false);
@@ -213,6 +217,7 @@ public class DialogController {
         }
     }
 
+ // Edit clinician dialog field names    
     public void openEditClinicianDialog(int selectedRow) {
         int modelRow = mainTable.convertRowIndexToModel(selectedRow);
         String[] row = currentData.get(modelRow + 1);
@@ -260,13 +265,13 @@ public class DialogController {
 
   
     
-    
+ // Add appointment dialog field names
     public void openAddAppointmentDialog() {
         String newId = generateSequentialId("A", currentData);
         JTextField idF = new JTextField(newId); 
         idF.setEditable(false);
 
-        // ----------------- Patient ID Dropdown -----------------
+//		Patient dropdown
         List<String[]> patientsData = DataManager.loadCSV(viewFolder + "patients.csv");
         String[] patientOptions = patientsData.stream()
             .skip(1)
@@ -274,7 +279,7 @@ public class DialogController {
             .toArray(String[]::new);
         JComboBox<String> patientIdCombo = new JComboBox<>(patientOptions);
 
-        // ----------------- Clinician ID Dropdown -----------------
+//		Clinician dropdown
         List<String[]> cliniciansData = DataManager.loadCSV(viewFolder + "clinicians.csv");
         String[] clinicianOptions = cliniciansData.stream()
             .skip(1)
@@ -282,7 +287,7 @@ public class DialogController {
             .toArray(String[]::new);
         JComboBox<String> clinicianIdCombo = new JComboBox<>(clinicianOptions);
 
-        // ----------------- Facility ID Dropdown -----------------
+//	Facility dropdown
         List<String[]> facilityData = DataManager.loadCSV(viewFolder + "facilities.csv");
         String[] facilityOptions = facilityData.stream()
             .skip(1)
@@ -301,7 +306,7 @@ public class DialogController {
         JTextField createdF = new JTextField(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         JTextField modifiedF = new JTextField(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 
-        // Use a panel for better layout (scrollable)
+        // Use a panel for scrollable layout
         JPanel panel = new JPanel(new GridLayout(0, 2, 5, 5));
         panel.add(new JLabel("Appointment ID:")); panel.add(idF);
         panel.add(new JLabel("Patient:")); panel.add(patientIdCombo);
@@ -338,22 +343,22 @@ public class DialogController {
         }
     }
 
-    
+ // edit appointment dialog field names
     public void openEditAppointmentDialog(int selectedRow) {
         int modelRow = mainTable.convertRowIndexToModel(selectedRow);
         String[] row = currentData.get(modelRow + 1);
 
         JTextField idF = new JTextField(row[0]); 
         idF.setEditable(false);
-
-        // ----------------- Patient ID Dropdown -----------------
+        
+//		Patient dropdown
         List<String[]> patientsData = DataManager.loadCSV(viewFolder + "patients.csv");
         String[] patientOptions = patientsData.stream()
             .skip(1)
             .map(p -> p[0] + " - " + p[1] + " " + p[2])
             .toArray(String[]::new);
         JComboBox<String> patientIdCombo = new JComboBox<>(patientOptions);
-        // Select current value
+
         for (int i = 0; i < patientIdCombo.getItemCount(); i++) {
             if (patientIdCombo.getItemAt(i).startsWith(row.length > 1 ? row[1] : "")) {
                 patientIdCombo.setSelectedIndex(i);
@@ -361,7 +366,7 @@ public class DialogController {
             }
         }
 
-        // ----------------- Clinician ID Dropdown -----------------
+//		Clinician dropdown
         List<String[]> cliniciansData = DataManager.loadCSV(viewFolder + "clinicians.csv");
         String[] clinicianOptions = cliniciansData.stream()
             .skip(1)
@@ -375,7 +380,7 @@ public class DialogController {
             }
         }
 
-        // ----------------- Facility ID Dropdown -----------------
+//		Facility dropdown
         List<String[]> facilityData = DataManager.loadCSV(viewFolder + "facilities.csv");
         String[] facilityOptions = facilityData.stream()
             .skip(1)
@@ -437,8 +442,7 @@ public class DialogController {
     }
 
 
- // ---------- Prescription dialogs ----------
- // ---------- Add Prescription Dialog ----------
+    // add prescription dialog field names
     public void openAddPrescriptionDialog() {
         String newId = generateSequentialId("PR", currentData);
         JTextField prescriptionIdF = new JTextField(newId); prescriptionIdF.setEditable(false);
@@ -457,7 +461,6 @@ public class DialogController {
         JTextField issueDateF = new JTextField(LocalDate.now().toString());
         JTextField collectionDateF = new JTextField();
 
-        // Create a panel to hold fields
         JPanel panel = new JPanel(new GridLayout(0, 2, 5, 5)); // 2 columns: label + field
         panel.add(new JLabel("Prescription ID:")); panel.add(prescriptionIdF);
         panel.add(new JLabel("Patient ID:")); panel.add(patientIdF);
@@ -493,7 +496,8 @@ public class DialogController {
         }
     }
 
-    // ---------- Edit Prescription Dialog ----------
+
+    // edit prescription dialog field names
     public void openEditPrescriptionDialog(int selectedRow) {
         int modelRow = mainTable.convertRowIndexToModel(selectedRow);
         String[] row = currentData.get(modelRow + 1);
@@ -549,7 +553,7 @@ public class DialogController {
         }
     }
 
- // ---------- Add Referral Dialog ----------
+    // add referral dialog field names
     public void openAddReferralDialog() {
         String newId = generateSequentialId("R", currentData);
 
@@ -601,14 +605,13 @@ public class DialogController {
                     appointmentIdF.getText(), notesF.getText(), createdDateF.getText(), lastUpdatedF.getText()
             };
             currentData.add(newRow);
-//            ReferralManager.saveCSV(viewFolder + "referrals.csv", currentData);
             DataManager.saveCSV(viewFolder + "referrals.csv", currentData);
 
             selectRowById(referralIdF.getText());
         }
     }
 
-    // ---------- Edit Referral Dialog ----------
+    // edit referral dialog field names
     public void openEditReferralDialog(int selectedRow) {
         int modelRow = mainTable.convertRowIndexToModel(selectedRow);
         String[] row = currentData.get(modelRow + 1);
@@ -666,9 +669,7 @@ public class DialogController {
                     appointmentIdF.getText(), notesF.getText(), createdDateF.getText(), lastUpdatedF.getText()
             };
             currentData.set(modelRow + 1, updatedRow);
-//            ReferralManager.saveCSV(viewFolder + "referrals.csv", currentData);
             DataManager.saveCSV(viewFolder + "referrals.csv", currentData);
-
             selectRowById(referralIdF.getText());
         }
     }

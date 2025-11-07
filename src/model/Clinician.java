@@ -6,20 +6,20 @@ import java.time.format.DateTimeFormatter;
 public class Clinician {
 
     // Attributes based on your CSV columns
-    private String clinicianId;
-    private String firstName;
-    private String lastName;
-    private String title;
-    private String speciality;
-    private String gmcNumber;
-    private String phoneNumber;
-    private String email;
-    private String workplaceId;
-    private String workplaceType;
-    private String employmentStatus;
+    private String clinicianId; //clinician id
+    private String firstName; //clinicial first name
+    private String lastName; //clinician last name
+    private String title; //clinician title
+    private String speciality; //clinician speciality
+    private String gmcNumber; //clinician gmc number
+    private String phoneNumber; //clinician phone number
+    private String email; //clinician email address 
+    private String workplaceId; //clinician workplace id
+    private String workplaceType; //clinician workplace type
+    private String employmentStatus; //clinician status
     private LocalDate startDate;  // Use LocalDate for date handling
 
-    // --- Constructors ---
+//	Constrctor
     public Clinician() {}
 
     public Clinician(String clinicianId, String firstName, String lastName, String title,
@@ -40,7 +40,7 @@ public class Clinician {
         this.startDate = startDate;
     }
 
-    // --- Getters and Setters ---
+    // Setter and getters
     public String getClinicianId() { return clinicianId; }
     public void setClinicianId(String clinicianId) { this.clinicianId = clinicianId; }
 
@@ -87,9 +87,7 @@ public class Clinician {
         return clinicianId + " - " + firstName + " " + lastName + " (" + speciality + ")";
     }
 
-    // =================================================
-    // CSV Conversion
-    // =================================================
+//	CSV to the table
     public static Clinician fromCSVRow(String[] row) {
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         LocalDate start = (row.length > 11 && !row[11].isEmpty()) ? LocalDate.parse(row[11], fmt) : null;
@@ -109,6 +107,7 @@ public class Clinician {
         );
     }
 
+//	CSV to the table
     public String[] toCSVRow() {
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         return new String[] {

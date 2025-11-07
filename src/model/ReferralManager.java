@@ -1,127 +1,58 @@
-//package model;
-//
-//import java.io.BufferedWriter;
-//import java.io.File;
-//import java.io.FileWriter;
-//import java.io.IOException;
-//import java.util.List;
-//
-//public class ReferralManager {
-//    private static ReferralManager instance;
-//    private int counter = 1;
-//
-//    private ReferralManager() {}
-//
-//    public static synchronized ReferralManager getInstance() {
-//        if (instance == null) instance = new ReferralManager();
-//        return instance;
-//    }
-//
-//    public String generateReferralId() {
-//        return "R" + (counter++);
-//    }
-//
-//    // --- Add this method ---
-//    public static void saveCSV(String filepath, List<String[]> data) {
-//        try {
-//            File f = new File(filepath);
-//            f.getParentFile().mkdirs();
-//            try (BufferedWriter bw = new BufferedWriter(new FileWriter(f))) {
-//                for (String[] row : data) {
-//                    bw.write(String.join(",", row));
-//                    bw.newLine();
-//                }
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
-//}
-
-
-
-
-
-
-
 package model;
 
-import java.util.List;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class ReferralManager {
-
     private static ReferralManager instance;
-    private int counter = 1;
+    private final String logFilePath = "src/view/singleton_referral.txt";
 
-    private final String filePath = "src/view/referrals.csv";
-
-    // Private constructor for singleton
     private ReferralManager() {}
 
-    // Singleton getter
-    public static synchronized ReferralManager getInstance() {
+    public static ReferralManager getInstance() {
         if (instance == null) {
             instance = new ReferralManager();
         }
         return instance;
     }
 
-    public String generateReferralId() {
-        return "R" + (counter++);
-    }
+//	Logging through singleton
+    public void logAction(String action) {
+        if (action == null) return;
+        String lower = action.toLowerCase();
+        if (lower.contains("ok") || lower.contains("cancel")) {
+            return;
+        }
 
-    public List<Referral> getAllReferrals() {
-        return DataManager.loadReferrals(filePath);
-    }
+        String timestamp = "[" + java.time.LocalDateTime.now().toString().replace("T", " ") + "]";
+        String logLine = timestamp + " " + action;
 
-    public void addReferral(Referral referral) {
-        System.out.println("[DEBUG] addReferral() called.");
+        System.out.println(logLine);
 
-        List<Referral> referrals = DataManager.loadReferrals(filePath);
-        referrals.add(referral);
-        DataManager.saveReferrals(filePath, referrals);
-
-        System.out.println("[DEBUG] Referral saved to CSV.");
-
-        logReferralAction(referral);
-    }
-
-    private void logReferralAction(Referral referral) {
-        System.out.println("==============================================");
-        System.out.println("Referral button clicked");
-        System.out.println("Entered the following details:");
-        System.out.println("Referral ID: " + referral.getReferralId());
-        System.out.println("Patient ID: " + referral.getPatientId());
-        System.out.println("Referring Clinician ID: " + referral.getReferringClinicianId());
-        System.out.println("Referred To Clinician ID: " + referral.getReferredToClinicianId());
-        System.out.println("Referral Reason: " + referral.getReferralReason());
-        System.out.println("Status: " + referral.getStatus());
-        System.out.println("Referral Date: " + referral.getReferralDate());
-        System.out.println("Notes: " + referral.getNotes());
-        System.out.println("Referral added to list");
-        System.out.println("==============================================");
-    }
-
-    public static void saveCSV(String filePath, List<String[]> data) {
-        try (java.io.BufferedWriter writer = new java.io.BufferedWriter(new java.io.FileWriter(filePath))) {
-            for (String[] row : data) {
-                writer.write(String.join(",", row));
-                writer.newLine();
-            }
-        } catch (Exception e) {
+        try (FileWriter writer = new FileWriter(logFilePath, true)) {
+            writer.write(logLine + System.lineSeparator());
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void updateReferral(Referral updated) {
-        List<Referral> referrals = DataManager.loadReferrals(filePath);
-        for (int i = 0; i < referrals.size(); i++) {
-            if (referrals.get(i).getReferralId().equals(updated.getReferralId())) {
-                referrals.set(i, updated);
-                break;
-            }
+    // Logging the content
+    public void logReferralContent(String[] referralData) {
+        if (referralData == null || referralData.length == 0) return;
+
+        try (FileWriter writer = new FileWriter(logFilePath, true)) {
+            writer.write("\n=== Referral Entry ===\n");
+            writer.write("Referral ID: " + referralData[0] + "\n");
+            writer.write("Patient ID: " + referralData[1] + "\n");
+            writer.write("Clinician ID: " + referralData[2] + "\n");
+            writer.write("Referred To: " + referralData[3] + "\n");
+            writer.write("Reason: " + referralData[4] + "\n");
+            writer.write("Status: " + referralData[5] + "\n");
+            writer.write("Notes: " + referralData[6] + "\n");
+            writer.write("=======================\n");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        DataManager.saveReferrals(filePath, referrals);
-        System.out.println("[DEBUG] Referral updated: " + updated.getReferralId());
     }
 }
+
