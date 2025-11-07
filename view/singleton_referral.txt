@@ -1,8 +1,0 @@
-[2025-11-07 15:25:34.002850] Switched to Admin view
-[2025-11-07 15:26:32.978606200] Switched to Admin view
-[2025-11-07 15:49:37.741584100] Switched to Admin view
-[2025-11-07 15:53:32.820889100] Switched to Admin view
-[2025-11-07 15:53:34.176636100] Button clicked: referrals
-[2025-11-07 15:53:37.249697300] [UI] Add button clicked for entity: referrals
-[2025-11-07 15:53:38.699016800] [DATA] Record added successfully in referrals
-[2025-11-07 15:53:38.702016800] [UI] Add button clicked for entity: referrals
